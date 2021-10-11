@@ -3,7 +3,7 @@
 Enable basic systemd service management support for WSL2
 
 This is a fork and some subsequent updates to a [previous attempt](https://github.com/DamionGans/ubuntu-wsl2-systemd-script)
-at this based on a rough set of instructions from [Daniel](https://form.snapcraft.io/u/daniel) on the Snapcraft forums, and
+at this based on a rough set of instructions from [Daniel](https://forum.snapcraft.io/u/daniel) on the Snapcraft forums, and
 extended with some additional WSL2/wslg support.
 
 ## Usage
