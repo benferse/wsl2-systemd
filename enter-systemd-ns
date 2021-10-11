@@ -1,3 +1,60 @@
-#!/bin/bash
+#!/bin/bash --norc
 
-echo $0
+# Enter the bottle. The --norc is important in the shebang because
+# we'd prefer to not loop forever.
+#
+# Credit to Damion Gans' prior art here!
+
+if [ "$LOGNAME" != "root" ]; then
+    echo "$0 needs to be run as root"
+    exit 1
+fi
+
+if [ -x /usr/sbin/daemonize ]; then
+    DAEMONIZE=/usr/sbin/daemonize
+elif [ -x /usr/bin/daemonize ]; then
+    DAEMONIZE=/usr/bin/daemonize
+else
+    echo "Cannot execute `daemonize` to start systemd"
+    exit 1
+fi
+
+if ! command -v /lib/systemd/systemd >/dev/null; then
+    echo "Cannot execute `/lib/systemd/systemd`"
+    exit 1
+fi
+
+if ! command -v /usr/bin/unshare >/dev/null; then
+    echo "Cannot execute `/usr/bin/unshare`"
+    exit 1
+fi
+
+# Start up systemd if it's not already running
+SYSTEMD_EXE="/lib/systemd/systemd --unit=basic.target"
+SYSTEMD_PID="$(ps -eo pid=,args= | awk '$2" "$3=="'"$SYSTEMD_EXE"'" {print $1}')"
+if [ -z "$SYSTEMD_PID" ]; then
+    "$DAEMONIZE" /usr/bin/unshare --fork --pid --mount-proc bash -c 'export container=wsl; mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc; exec '"$SYSTEMD_EXE"
+    while [ -z "$SYSTEMD_PID" ]; do
+        echo "Giving systemd a chance to settle..."
+        sleep 1
+        SYSTEMD_PID="$(ps -eo pid=,args= | awk '$2" "$3=="'"$SYSTEMD_EXE"'" {print $1}')"
+    done
+fi
+
+# Now that we know systemd is running, figure out whether to start a login or
+# a non-login shell for the primary user
+USER_HOME="$(getent passwd | awk -F: '$1=="'"$SUDO_USER"'" {print $6}')"
+if [ -n "$SYSTEMD_PID" ] && [ "$SYSTEMD_PID" != "1" ]; then
+    if [ -n "$1" ] && [ "$1" != "bash --login" ] && [ "$1" != "/bin/bash --login" ]; then
+        exec /usr/bin/nsenter -t "$SYSTEMD_PID" -a \
+            /usr/bin/sudo -H -u "$SUDO_USER" \
+            /bin/bash -c 'set -a; [ -f "$HOME/.systemd-env" ] && source "$HOME/.systemd-env"; set +a; exec bash -c '"$(printf "%q" "$@")"
+    else
+        exec /usr/bin/nsenter -t "$SYSTEMD_PID" -a \
+            /bin/login -p -f "$SUDO_USER" \
+            $([ -f "$USER_HOME/.systemd-env" ] && /bin/cat "$USER_HOME/.systemd-env" | xargs printf ' %q')
+    fi
+
+    echo "It is unfortunate that what is happening now is impossible. Best of luck!"
+    exit 1
+fi
