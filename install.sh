@@ -33,10 +33,10 @@ if ! apt install -yqq daemonize dbus-user-session fontconfig; then
     exit
 fi
 
-script_dir="$(dirname $0)"
+this_dir="$(dirname $0)"
 
-cp "$script_dir/enter-systemd-ns" /usr/sbin/enter-systemd-ns
-cp "$script_dir/launch-systemd-ns" /usr/sbin/launch-systemd-ns
+cp "$this_dir/scripts/enter-systemd-ns" /usr/sbin/enter-systemd-ns
+cp "$this_dir/scripts/launch-systemd-ns" /usr/sbin/launch-systemd-ns
 chmod 755 /usr/sbin/enter-systemd-ns
 
 sudo tee /etc/sudoers.d/systemd-ns >/dev/null <<EOF
