@@ -21,8 +21,9 @@ echo 1 > /proc/sys/fs/binfmt_misc/WSLInterop
 echo Removing custom wsl.conf...
 rm -f /etc/wsl.conf
 
-echo Removing systemd namespace support...
+echo Removing systemd configuration...
 rm -f /etc/profile.d/00-wsl2-systemd.sh
+rm -f /usr/sbin/launch-systemd-ns
 
 echo Removing systemd units for wslg...
 rm -f /etc/systemd/system/wslg-xwayland.service
@@ -32,7 +33,7 @@ rm -f /etc/systemd/system/multi-user.target.wants/wslg-xwayland.service
 rm -f /etc/systemd/system/multi-user.target.wants/wslg-xwayland.socket
 
 echo Updating sudoers...
-rm -f /etc/sudoers.d/wsl2-systemd.sudoers
+rm -f /etc/sudoers.d/wsl2-systemd-sudoers
 
 echo Fixing the wslg Wayland runtime dir...
 rm -rf /tmp/.X11-unix

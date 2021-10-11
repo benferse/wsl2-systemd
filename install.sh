@@ -28,24 +28,23 @@ echo 1 > /proc/sys/fs/binfmt_misc/WSLInterop
 
 this_dir="$(dirname $0)"
 
-echo Installing wsl.conf...
-cp "$this_dir/etc/wsl.conf" /etc
+echo Installing systemd configuration...
+install -o root -g root -m 644 -t /etc -v "$this_dir/etc/wsl.conf"
+install -o root -g root -m 755 -t /usr/sbin -v "$this_dir/scripts/launch-systemd-ns"
 
-echo Installing systemd namespace support...
-cp "$this_dir/etc/00-wsl2-systemd.sh" /etc/profile.d
-
-echo Installing systemd units for wslg...
-cp "$this_dir/units/wslg-xwayland.socket" /etc/systemd/system
-cp "$this_dir/units/wslg-xwayland.service" /etc/systemd/system
-
-mkdir -p /etc/systemd/system/user-runtime-dir@.service.d
-cp "$this_dir/units/user-runtime-dir.override" /etc/systemd/system/user-runtime-dir@.service.d/override.conf
+echo Installing systemd units for wsl/wslg support...
+install -o root -g root -m 644 -t /etc/systemd/system -v "$this_dir/units/wslg-xwayland.socket"
+install -o root -g root -m 644 -t /etc/systemd/system -v "$this_dir/units/wslg-xwayland.service"
+install -o root -g root -m 644 -T -D -v "$this_dir/units/user-runtime-dir.override" /etc/systemd/system/user-runtime-dir@.service.d/override.conf
 
 systemctl enable wslg-xwayland.socket
 systemctl enable wslg-xwayland.service
 
 echo Updating sudoers...
-cp "$this_dir/etc/wsl2-systemd.sudoers" /etc/sudoers.d
+install -o root -g root -m 644 -t /etc/sudoers.d -v "$this_dir/etc/wsl2-systemd-sudoers"
+
+echo Updating profile to enter systemd namespace for all shells...
+install -o root -g root -m 644 -t /etc/profile.d -v "$this_dir/etc/00-wsl2-systemd.sh"
 
 echo "Done. You will need to restart your WSL instance to enable systemd."
 read -r -p "Reboot WSL now? [y/N]: " response

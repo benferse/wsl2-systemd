@@ -1,48 +1,29 @@
-SYSTEMD_EXE="$(command -v systemd)"
-
-if [ -z "$SYSTEMD_EXE" ]; then
-	if [ -x "/usr/lib/systemd/systemd" ]; then
-		SYSTEMD_EXE="/usr/lib/systemd/systemd"
-	else
-		SYSTEMD_EXE="/lib/systemd/systemd"
-	fi
-fi
-
-SYSTEMD_EXE="$SYSTEMD_EXE --unit=multi-user.target" # snapd requires multi-user.target not basic.target
+SYSTEMD_EXE="/usr/lib/systemd/systemd --unit=multi-user.target" # snapd requires multi-user.target not basic.target
 SYSTEMD_PID="$(ps -C systemd -o pid= | head -n1)"
 
-if [ -z "$SYSTEMD_PID" ] || [ "$SYSTEMD_PID" -ne 1 ]; then
+# If systemd wasn't started at boot time by wsl's init process,
+# then there's nothing else to do here
+if [ -z "$SYSTEMD_PID" ]; then
+    exit
+fi
+
+# If systemd does not appear to be PID 1, then attempt to enter its
+# namespace
+if [ "$SYSTEMD_PID" -ne 1 ]; then
+    # If we're not already in an su environment, then capture our environment before
+    # attempting to elevate so it can be resumed later
 	if [ -z "$SUDO_USER" ]; then
-		[ -f "$HOME/.systemd.env" ] && rm "$HOME/.systemd.env"
+		[ -f "$HOME/.systemd.env" ] && rm -f "$HOME/.systemd.env"
 		export > "$HOME/.systemd.env"
 	fi
 
+    # If we're not root, we need to be. Relaunch ourselves with sudo.
 	if [ "$USER" != "root" ]; then
-		case "$0" in
-			*"zsh")
-				WSL_SYSTEMD_EXECUTION_ARGS="$ZSH_EXECUTION_STRING"
-				;;
-			*)
-				WSL_SYSTEMD_EXECUTION_ARGS="$@"
-				;;
-		esac
-		export WSL_SYSTEMD_EXECUTION_ARGS
-		case "$0" in
-			*"bash")
-				exec sudo /bin/sh "$(realpath "${BASH_SOURCE[0]}")"
-				;;
-			*"zsh")
-				exec sudo /bin/sh "$(realpath "${(%):-%x}")"
-				;;
-			*"ksh")
-				exec sudo /bin/sh "$(realpath "${.sh.file}")"
-				;;
-			*)
-				exec sudo /bin/sh "$(realpath /etc/profile.d/00-wsl2-systemd.sh)"
-				;;
-		esac
-	fi
+        exec sudo /bin/sh /etc/profile.d/00-wsl2-systemd.sh
+    fi
 
+    # If we're here, we are running as root, but still haven't entered the systemd namespace.
+    # Make any changes we need to make to the environment.
 	if ! grep -q WSL_INTEROP /etc/environment; then
 		echo "WSL_INTEROP='/run/WSL/$(ls -rv /run/WSL | head -n1)'" >> /etc/environment
 	else
@@ -65,17 +46,6 @@ if [ -z "$SYSTEMD_PID" ] || [ "$SYSTEMD_PID" -ne 1 ]; then
 		sed -i "s/DISPLAY=.*/DISPLAY='$DISPLAY'/" /etc/environment
 	fi
 
-	if [ -z "$SYSTEMD_PID" ]; then
-		env -i /usr/bin/unshare --fork --mount-proc --pid --propagation shared -- sh -c "
-			mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc
-			exec $SYSTEMD_EXE
-			" &
-		while [ -z "$SYSTEMD_PID" ]; do
-			SYSTEMD_PID="$(ps -C systemd -o pid= | head -n1)"
-			sleep 1
-		done
-	fi
-
 	IS_SYSTEMD_READY_CMD="/usr/bin/nsenter --mount --pid --target $SYSTEMD_PID -- systemctl is-system-running"
 	WAITMSG="$($IS_SYSTEMD_READY_CMD 2>&1)"
 	if [ "$WAITMSG" = "initializing" ] || [ "$WAITMSG" = "starting" ] || [ "$WAITMSG" = "Failed to connect to bus: No such file or directory" ]; then
@@ -88,12 +58,12 @@ if [ -z "$SYSTEMD_PID" ] || [ "$SYSTEMD_PID" -ne 1 ]; then
 	done
 	echo "\nSystemd is ready. Logging in."
 
-	if [ -n "$WSL_SYSTEMD_EXECUTION_ARGS" ]; then
-		exec /usr/bin/nsenter --mount --pid --target "$SYSTEMD_PID" -- sudo -u "$SUDO_USER" /bin/sh -c "unset WSL_SYSTEMD_EXECUTION_ARGS; set -a; . '$HOME/.systemd.env'; set +a; eval \"$WSL_SYSTEMD_EXECUTION_ARGS\""
-	else
-		exec /usr/bin/nsenter --mount --pid --target "$SYSTEMD_PID" -- su - "$SUDO_USER"
-	fi
+    exec /usr/bin/nsenter --mount --pid --target "$SYSTEMD_PID" -- su - "$SUDO_USER"
 fi
+
+# If we're here, we're already in the systemd namespace. However, we've exec'd over
+# the process that would have run the rest of the profile, so we have to do that
+# ourselves
 
 unset SYSTEMD_EXE
 unset SYSTEMD_PID

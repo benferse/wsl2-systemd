@@ -1,0 +1,4 @@
+#!/bin/sh
+
+mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc
+exec /usr/lib/systemd/systemd --unit=multi-user.target

@@ -1,0 +1,8 @@
+# Allow anyone in the sudo group to run the systemd setup script as root
+# without providing a password.
+
+Defaults env_keep += WT_SESSION
+Defaults env_keep += WT_PROFILE_ID
+Defaults env_keep += DISPLAY
+Defaults env_keep += HOME
+%sudo ALL=(root) NOPASSWD: /bin/sh /etc/profile.d/00-wsl2-systemd.sh
