@@ -37,7 +37,9 @@ cp "$this_dir/etc/00-wsl2-systemd.sh" /etc/profile.d
 echo Installing systemd units for wslg...
 cp "$this_dir/units/wslg-xwayland.socket" /etc/systemd/system
 cp "$this_dir/units/wslg-xwayland.service" /etc/systemd/system
-cp "$this_dir/units/user-runtime-dir.override" "/etc/systemd/system/user-runtime-dir@.service.d/override.conf"
+
+mkdir -p /etc/systemd/system/user-runtime-dir@.service.d
+cp "$this_dir/units/user-runtime-dir.override" /etc/systemd/system/user-runtime-dir@.service.d/override.conf
 
 systemctl enable wslg-xwayland.socket
 systemctl enable wslg-xwayland.service

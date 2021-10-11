@@ -33,7 +33,6 @@ rm -f /etc/systemd/system/multi-user.target.wants/wslg-xwayland.socket
 
 echo Updating sudoers...
 rm -f /etc/sudoers.d/wsl2-systemd.sudoers
-EOF
 
 echo Fixing the wslg Wayland runtime dir...
 rm -rf /tmp/.X11-unix
