@@ -27,4 +27,4 @@ systemctl
 
 Find WSL distributions in [the store](https://aka.ms/wslstore)
 
-- [Ubuntu 20.04()
+- Ubuntu 20.04
