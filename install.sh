@@ -59,7 +59,7 @@ sudo rm -f /lib/systemd/system/sysinit.target.wants/proc-sys-fs-binfmt_misc.auto
 sudo rm -f /lib/systemd/system/sysinit.target.wants/proc-sys-fs-binfmt_misc.mount
 sudo rm -f /lib/systemd/system/sysinit.target.wants/systemd-binfmt.service
 
-/mnt/c/Windows/System32/cmd.exe /C setx WSLENV BASH_ENV
-/mnt/c/Windows/System32/cmd.exe /C setx BASH_ENV /etc/bash.bashrc
+>/dev/null 2>&1 /mnt/c/Windows/System32/cmd.exe /C setx WSLENV BASH_ENV
+>/dev/null 2>&1 /mnt/c/Windows/System32/cmd.exe /C setx BASH_ENV /etc/bash.bashrc
 
 echo "Done."
