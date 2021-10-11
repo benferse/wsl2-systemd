@@ -18,30 +18,26 @@ fi
 echo Enabling WSL/Windows interop...
 echo 1 > /proc/sys/fs/binfmt_misc/WSLInterop
 
-echo Removing systemd namespace scripts...
-rm -f /usr/sbin/launch-systemd-ns
-rm -f /usr/sbin/enter-systemd-ns
+echo Removing custom wsl.conf...
+rm -f /etc/wsl.conf
+
+echo Removing systemd namespace support...
+rm -f /etc/profile.d/00-wsl2-systemd.sh
 
 echo Removing systemd units for wslg...
 rm -f /etc/systemd/system/wslg-xwayland.service
 rm -f /etc/systemd/system/wslg-xwayland.socket
+rm -f /etc/systemd/system/user-runtime-dir@.service.d/override.conf
 rm -f /etc/systemd/system/multi-user.target.wants/wslg-xwayland.service
 rm -f /etc/systemd/system/multi-user.target.wants/wslg-xwayland.socket
 
 echo Updating sudoers...
-rm -f /etc/sudoers.d/systemd-ns.sudoers
+rm -f /etc/sudoers.d/wsl2-systemd.sudoers
 EOF
-
-echo Reverting bash.bashrc...
-sed -i '/launch-systemd-ns/d' /etc/bash.bashrc
 
 echo Fixing the wslg Wayland runtime dir...
 rm -rf /tmp/.X11-unix
 ln -s /mnt/wslg/.X11-unix /tmp
-
-echo Reverting Windows environment...
->/dev/null 2>&1 /mnt/c/Windows/System32/reg.exe delete "HKCU\Environment" /F /V "BASH_ENV"
->/dev/null 2>&1 /mnt/c/Windows/System32/reg.exe delete "HKCU\Environment" /F /V "WSLENV"
 
 echo "Done. You should restart your WSL instance to cleanup."
 read -r -p "Reboot WSL now? [y/N]: " response
