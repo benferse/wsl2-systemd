@@ -2,9 +2,8 @@
 
 Enable basic systemd service management support for WSL2
 
-This is a fork and some subsequent updates to a [previous attempt](https://github.com/DamionGans/ubuntu-wsl2-systemd-script)
-at this based on a rough set of instructions from [Daniel](https://forum.snapcraft.io/u/daniel) on the Snapcraft forums, and
-extended with some additional WSL2/wslg support.
+This is a fork and some minor updates to other attempts at this based on a rough set of
+instructions on the Snapcraft forums, and extended with some additional WSL2/wslg support.
 
 ## Usage
 
@@ -29,7 +28,12 @@ Find WSL distributions in [the store](https://aka.ms/wslstore)
 
 - Ubuntu 20.04
 
+## Limitations
+
+- Assumes bash in lots of places, sorry
+
 ## Shout outs
 
 - [Dani](https://github.com/diddledani)
 - [Damion](https://github.com/damiongans)
+- [Daniel](https://forum.snapcraft.io/u/daniel)
