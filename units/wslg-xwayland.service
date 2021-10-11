@@ -6,3 +6,6 @@ ConditionPathExists=/mnt/wslg/.X11-unix/X0
 
 [Service]
 ExecStart=/lib/systemd/systemd-socket-proxyd /mnt/wslg/.X11-unix/X0
+
+[Install]
+WantedBy=multi-user.target
