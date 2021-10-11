@@ -20,6 +20,8 @@ echo 1 > /proc/sys/fs/binfmt_misc/WSLInterop
 rm -f /usr/sbin/launch-systemd-ns
 rm -f /usr/sbin/enter-systemd-ns
 rm -f /etc/sudoers.d/systemd-ns
+rm -f /etc/systemd/system/wslg-xwayland.service
+rm -f /etc/systemd/system/wslg-xwayland.socket
 sed -i '/launch-systemd-ns/d' /etc/bash.bashrc
 
 >/dev/null 2>&1 /mnt/c/Windows/System32/reg.exe delete "HKCU\Environment" /F /V "BASH_ENV"

@@ -39,6 +39,9 @@ cp "$this_dir/scripts/enter-systemd-ns" /usr/sbin/enter-systemd-ns
 cp "$this_dir/scripts/launch-systemd-ns" /usr/sbin/launch-systemd-ns
 chmod 755 /usr/sbin/enter-systemd-ns
 
+cp "$this_dir/units/wslg-xwayland.socket" /etc/systemd/system
+cp "$this_dir/units/wslg-xwayland.service" /etc/systemd/system
+
 sudo tee /etc/sudoers.d/systemd-ns >/dev/null <<EOF
 Defaults     env_keep += WSLPATH
 Defaults     env_keep += WSLENV
