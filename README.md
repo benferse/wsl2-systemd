@@ -13,7 +13,7 @@ Fork the repo and run the install script.
 sudo apt install -y git
 git clone https://github.com/benferse/wsl2-systemd
 cd wsl2-systemd
-sudo ./install.sh
+./install.sh
 ```
 
 Once the installer finishes, restart a WSL shell, and see if you can talk to the service manager
