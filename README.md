@@ -1,3 +1,7 @@
+# You don't need this any longer
+
+Check out the [announcement](https://devblogs.microsoft.com/commandline/systemd-support-is-now-available-in-wsl/) for the official support of systemd in WSL. What a time to be alive.
+
 # wsl2-systemd
 
 Enable basic systemd service management support for WSL2
